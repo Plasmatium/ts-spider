@@ -7,11 +7,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}\\src\\index.ts",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ]
+      "name": "launch",
+      "program": "${workspaceRoot}/dist/index.js",
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector"
     }
   ]
 }
