@@ -2,32 +2,46 @@ import axios, { AxiosRequestConfig, AxiosAdapter } from 'axios'
 import chalk from 'chalk'
 import * as cheerio from 'cheerio'
 
-// this is for vscode debug console colorful
-let log = console.log
+interface PdfLinkStruct {
+  url: string
+  meta: {
+    catId: number
+    type: 'PDS' | 'MAN'
+    size: string
+    lang: 'EN' | 'ZH'
+  }
+}
+
+const fillStruct = (li: CheerioElement) => {
+  let struct: PdfLinkStruct = <PdfLinkStruct>{meta: {}}
+  // validate url
+  struct.url = cheerio('a', li).attr('href')
+  // validate lang
+  if (struct.url.includes('-zh-')) struct.meta.lang = 'ZH'
+  else struct.meta.lang = 'EN'
+  // validate type
+  if (struct.url.includes('manual-')) struct.meta.type = 'MAN'
+  else struct.meta.type = 'PDS'
+  // validate catId
+  let matched = struct.url.match(/(\d+).pdf$/i)
+  struct.meta.catId = Number(matched && matched[1])
+  // validate size
+  struct.meta.size = cheerio('div.emerson-search-result-size', li).text()
+  debugger
+  return struct
+}
 
 class Spider {
   config: AxiosRequestConfig
   constructor (config: AxiosRequestConfig) {
     this.config = config
   }
-  async fetchProductUrlsOnPage (pageUrl: string) {
-    let data = await new SafeReq(pageUrl, this.config).getData()
-    let $ = cheerio.load(data)
-    let anchors = $('.product_name a')
-    let productUrls = [].map.call(anchors, (a: CheerioElement) => {
-      return a.attribs.href
-    })
-    
-    return productUrls
-  }
-  async sweapPage (pageUrl: string) {
-    // 获取页面
-    let productUrls = await this.fetchProductUrlsOnPage(pageUrl)
-    let productPages = await Promise.all(productUrls.map((productUrl: string) => {
-      return new SafeReq(productUrl, this.config).getData()
-    }))
 
-    // TODO: 提取所有pdf链接和对应的文字描述
+  async getUrlList (filterAddr: string) {
+    let data = await new SafeReq(filterAddr, this.config).getData()
+    let $ = cheerio.load(data)
+    let lis = $('ul.grid_mode li')
+    let struct = fillStruct(lis[4])
     debugger
   }
 }
@@ -59,7 +73,7 @@ class SafeReq {
     while (this.retryCount <= this.maxRetry && this.data === null) {
       if (!this.silent) {
         let info = `[${this.retryCount}/${this.maxRetry}] fetching: ${this.url}`
-        log(chalk.yellow(info))
+        console.log(chalk.yellow(info))
       }
       await this.safeGet()
     }
@@ -71,7 +85,7 @@ class SafeReq {
       this.data = (await axios(this.url, this.config)).data
       if (!this.silent) {
         let info = `[${this.retryCount}/${this.maxRetry}] fetched: ${this.url}`
-        log(chalk.green(info))
+        console.log(chalk.green(info))
       }
       // throw Error('test error')
     } catch (err) {

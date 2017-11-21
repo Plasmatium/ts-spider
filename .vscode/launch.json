@@ -12,7 +12,7 @@
       "args": [],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
-      "console": "externalTerminal"
+      "console": "integratedTerminal"
     }
   ]
 }
