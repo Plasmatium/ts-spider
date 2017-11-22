@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import * as cheerio from 'cheerio'
 import { Stream } from 'stream';
 import { spawn } from 'child_process';
+import { genSep, ClosureForGenSep } from './operate';
 
 interface PdfLinkStruct {
   url: string
@@ -62,23 +63,16 @@ let baseStringify: StringifyFunc = (struct, closure)  => {
   let typeStr = `${struct.meta.type}`
   let langStr = `${struct.meta.lang}`
   let sizeStr = `${struct.meta.size}`
-  return `[**[ ${typeStr} | ${langStr} | ${sizeStr} ]** ${struct.fileName}](${struct.url})`
+  return `* [ **[ ${typeStr} | ${langStr} | ${sizeStr} ]** ${struct.fileName} ](${struct.url})`
 }
 
 class MDGen {
   dataSet: PdfLinkStruct[]
   closure: {[propertyName: string]: any}
   defaultStringify: StringifyFunc = (struct, closure)  => {
-    // ? CAT | ID
-    // type PDS | lang ZH [filename link] | size 1.2M
-    let catalog = Math.floor(struct.meta.catId / 100)
-    let catStr = ''
-    if (closure && catalog !== closure.catalog) {
-      catStr = `## CAT | **${catalog}**\n`
-      closure.catalog = catalog
-    }
+    let sep = genSep(struct, <ClosureForGenSep>this.closure)
 
-    return `${catStr}${baseStringify(struct)}`
+    return `${sep}${baseStringify(struct)}`
   }
   constructor (
     dataSet: PdfLinkStruct[],

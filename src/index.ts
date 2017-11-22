@@ -47,14 +47,30 @@ const run  = async () => {
   // }
   // let dataSet = readAllJSON()
   // fs.writeFileSync('./data/main.json', JSON.stringify(dataSet))
-
+  //-------------------------------------
+  /* stage 2
   let refined1: PdfLinkStruct[] = JSON.parse(fs.readFileSync('data/refined1.json', 'utf-8'))
   refineFileName(refined1)
   let refined2: PdfLinkStruct[] = refined1.sort((a, b) => {
     if (a.fileName > b.fileName) return 1
     else if (a.fileName < b.fileName) return -1
     else return 0
-  })
-  debugger
+  }
+  //*/
+  //-----------------------------------
+  //* stage 3
+  console.time('run time')
+  let refined2: PdfLinkStruct[] = JSON.parse(fs.readFileSync('data/refined2.json', 'utf-8'))
+  let md = new MDGen(refined2)
+  md.closure = {
+    lastFileName: '',
+    matchThreshold: 2
+  }
+  let mdString = md.makeMD()
+  //*/
+  fs.writeFileSync('data/final.md', mdString)
 } 
-run().then(() => console.log('done!'))
+run().then(() => {
+  console.log('done!')
+  console.timeEnd('run time')
+})

@@ -20,7 +20,7 @@ export const dedup = (dataSet: PdfLinkStruct[]) => {
   console.log('dataSet.length:', dataSet.length)
   let god = new Map()
   dataSet.forEach(struct => {
-    god.set(struct.meta.catId, struct)
+    god.has(struct.meta.catId) && god.set(struct.meta.catId, struct)
   })
   console.log('god.size:', god.size)
   return [...god.values()]
@@ -36,13 +36,30 @@ export const refineFileName = (dataSet: PdfLinkStruct[]) => {
 }
 
 // refine from name matching count
-export const matchCount = (strList1: string[], strList2: string[]) => {
-  return strList1.reduce((count: number, currStr: string) => {
-    return count + Number(strList2.includes(currStr))
-  }, 0)
+export const matchedGroup = (strList1: string[], strList2: string[]) => {
+  return strList1.reduce((group: string[], currStr: string) => {
+    strList2.includes(currStr) && group.push(currStr)
+    return group
+  }, [])
 }
 
-export const genSep: StringifyFunc = (struct, closure) => {
+export interface ClosureForGenSep {
+  lastFileName: string
+  readonly matchThreshold: number
+}
+
+export const genSep = (struct: PdfLinkStruct, closure: ClosureForGenSep) => {
   // sep if match count (3 or closure.matchThreshold)
-  return ''
+  // closure.matchThreshold: number
+  // closure.last
+  let sep = ''
+  let matched = matchedGroup(
+    closure.lastFileName.split('-'),
+    struct.fileName.split('-')
+  )
+  if (matched.length < closure.matchThreshold) {
+    sep = `## Group ID: **${Math.floor(struct.meta.catId / 100)}**\n`
+  }
+  closure.lastFileName = struct.fileName
+  return sep
 }
