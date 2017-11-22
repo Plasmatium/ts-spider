@@ -2,7 +2,10 @@ import axios, { AxiosRequestConfig } from 'axios'
 import * as cheerio from 'cheerio'
 import * as fs from 'fs'
 
-import {SafeReq, Spider, MDGen} from './utils'
+import {SafeReq, Spider, MDGen, PdfLinkStruct} from './utils'
+import {readAllJSON, dedup, refineFileName} from './operate'
+import { Packet } from '_debugger';
+import { REPLServer } from 'repl';
 
 let config: AxiosRequestConfig = {}
 
@@ -36,11 +39,22 @@ const run  = async () => {
   // let dataSet = await spider.getUrlStructList(filterAddr)
   // let md = new MDGen(dataSet)
   
-  for (let i = 1; i <= 60; i += 2) {
-    await groupDo(i, spider)
-    // delay 1000 - 1500
-    let delay = Math.random() * 500 + 1000
-    await new Promise(res => { setTimeout(res, delay) })
-  }
+  // for (let i = 1; i <= 60; i += 2) {
+  //   await groupDo(i, spider)
+  //   // delay 1000 - 1500
+  //   let delay = Math.random() * 500 + 1000
+  //   await new Promise(res => { setTimeout(res, delay) })
+  // }
+  // let dataSet = readAllJSON()
+  // fs.writeFileSync('./data/main.json', JSON.stringify(dataSet))
+
+  let refined1: PdfLinkStruct[] = JSON.parse(fs.readFileSync('data/refined1.json', 'utf-8'))
+  refineFileName(refined1)
+  let refined2: PdfLinkStruct[] = refined1.sort((a, b) => {
+    if (a.fileName > b.fileName) return 1
+    else if (a.fileName < b.fileName) return -1
+    else return 0
+  })
+  debugger
 } 
 run().then(() => console.log('done!'))

@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosAdapter } from 'axios'
 import chalk from 'chalk'
 import * as cheerio from 'cheerio'
 import { Stream } from 'stream';
+import { spawn } from 'child_process';
 
 interface PdfLinkStruct {
   url: string
@@ -56,26 +57,40 @@ class Spider {
   }
 }
 
-type StringifyFunc = (struct: PdfLinkStruct) => string
+type StringifyFunc = (struct: PdfLinkStruct, closure?: {[p: string]: any}) => string
+let baseStringify: StringifyFunc = (struct, closure)  => {
+  let typeStr = `${struct.meta.type}`
+  let langStr = `${struct.meta.lang}`
+  let sizeStr = `${struct.meta.size}`
+  return `[**[ ${typeStr} | ${langStr} | ${sizeStr} ]** ${struct.fileName}](${struct.url})`
+}
 
 class MDGen {
   dataSet: PdfLinkStruct[]
-  defaultStringify: StringifyFunc = (struct) => {
+  closure: {[propertyName: string]: any}
+  defaultStringify: StringifyFunc = (struct, closure)  => {
+    // ? CAT | ID
     // type PDS | lang ZH [filename link] | size 1.2M
-    let typeStr = `${struct.meta.type}`
-    let langStr = `${struct.meta.lang}`
-    let sizeStr = `${struct.meta.size}`
-    let fileNameLink = `[${struct.fileName}]`
-    return `* [**[ ${typeStr} | ${langStr} | ${sizeStr} ]** ${fileNameLink}](${struct.url})`
+    let catalog = Math.floor(struct.meta.catId / 100)
+    let catStr = ''
+    if (closure && catalog !== closure.catalog) {
+      catStr = `## CAT | **${catalog}**\n`
+      closure.catalog = catalog
+    }
+
+    return `${catStr}${baseStringify(struct)}`
   }
-  constructor (dataSet: PdfLinkStruct[]) {
-    this.dataSet = dataSet.sort((a, b) => {
-      return Math.sign(a.meta.catId - b.meta.catId)
-    })
+  constructor (
+    dataSet: PdfLinkStruct[],
+    closure: {[propertyName: string]: any} = {}
+  ) {
+    this.dataSet = dataSet
+    this.closure = closure
   }
   makeMD (func: StringifyFunc = this.defaultStringify) {
+    let closure = {catalog: null}
     let strSet = this.dataSet.map(struct => {
-      return this.defaultStringify(struct)
+      return func(struct, closure)
     })
     return strSet.join('\n')
   }
@@ -141,5 +156,7 @@ class SafeReq {
 export {
   SafeReq,
   Spider,
-  MDGen
+  MDGen,
+  PdfLinkStruct,
+  StringifyFunc,
 }
