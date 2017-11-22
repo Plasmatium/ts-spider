@@ -60,8 +60,8 @@ const run  = async () => {
   //-----------------------------------
   //* stage 3
   console.time('run time')
-  let refined2: PdfLinkStruct[] = JSON.parse(fs.readFileSync('data/refined2.json', 'utf-8'))
-  let md = new MDGen(refined2)
+  let refined3: PdfLinkStruct[] = JSON.parse(fs.readFileSync('data/refined3.json', 'utf-8'))
+  let md = new MDGen(refined3)
   md.closure = {
     lastFileName: '',
     matchThreshold: 2

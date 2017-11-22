@@ -19,7 +19,7 @@ interface PdfLinkStruct {
 const fillStruct = (li: CheerioElement) => {
   let struct: PdfLinkStruct = <PdfLinkStruct>{meta: {}}
   // gen url
-  struct.url = 'htp:' + cheerio('a', li).attr('href')
+  struct.url = 'http:' + cheerio('a', li).attr('href')
   // gen fileName
   struct.fileName = <string> struct.url.split('/').pop()
   // gen type
