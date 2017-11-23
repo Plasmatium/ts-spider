@@ -13,7 +13,8 @@
     "@types/cheerio": "^0.22.5",
     "axios": "^0.17.1",
     "chalk": "^2.3.0",
-    "cheerio": "^1.0.0-rc.2"
+    "cheerio": "^1.0.0-rc.2",
+    "fuzzy-matching": "^0.4.3"
   },
   "devDependencies": {}
 }
