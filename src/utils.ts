@@ -1,8 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosAdapter } from 'axios'
 import chalk from 'chalk'
 import * as cheerio from 'cheerio'
-import { Stream } from 'stream';
-import { spawn } from 'child_process';
 import { genSep, ClosureForGenSep } from './operate';
 
 interface PdfLinkStruct {
